@@ -1,8 +1,13 @@
-import requests
 import re
 import sys
 import os
 import json
+
+try:
+    import requests
+except ModuleNotFoundError:
+    print('Please install requests')
+    sys.exit(1)
 
 try:
     TARGET_DOMAIN = sys.argv[1]
