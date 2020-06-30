@@ -12,7 +12,7 @@ except ModuleNotFoundError:
 try:
     TARGET_DOMAIN = sys.argv[1]
 except IndexError:
-    print(f"Usage: {sys.argv[0]} target_domain")
+    print("Usage: {} target_domain".format(sys.argv[0]))
     sys.exit(1)
 
 if not re.match('^[a-z]+([a-z]+\.)+[a-z]+$', TARGET_DOMAIN):
@@ -23,7 +23,7 @@ BASE_URL = "https://web.archive.org/cdx/search/cdx?url=*.{domain}&output=text&fl
 RAW_URLS = ""
 FINAL_URLS = []
 try:
-    with open("static_file_extensions.json", "r") as file:
+    with open("static_file_extensions.json") as file:
         STATIC_FILES = json.loads(file.read())  # Add more as you like
 except FileNotFoundError:
     print("Couldn't find static_file_extensions.json")
@@ -40,7 +40,7 @@ except requests.exceptions.RequestException:
     print("Couldn't connect to archive.org")
     sys.exit(1)
 except AssertionError:
-    print(f"Nothing found about {TARGET_DOMAIN}")
+    print("Nothing found about {}".format(TARGET_DOMAIN))
     sys.exit(1)
 
 RAW_URLS = list(set(map(str.strip, RAW_URLS.split('\n'))))
@@ -48,17 +48,18 @@ FINAL_URLS = RAW_URLS.copy()
 
 for url in RAW_URLS:
     for extension in STATIC_FILES:
-        if url.find(f'.{extension}?') > 0 or url.endswith(f'.{extension}'):
+        if url.find('.{}?'.format(extension)) > 0 or url.endswith('.{}'.format(extension)):
             FINAL_URLS.remove(url)
-
+FINAL_URLS = list(filter(None, FINAL_URLS))  # To remove empty strings
 try:
-    os.mkdir(f'output')
+    os.mkdir('output')
 except FileExistsError:
     pass
 
 try:
-    with open(f'output/{TARGET_DOMAIN}.txt', 'w') as output_file:
+    with open('output/{}.txt'.format(TARGET_DOMAIN), 'w') as output_file:
         output_file.write('\n'.join(FINAL_URLS))
 except (FileNotFoundError, PermissionError, IOError) as e:
-    print(f"Couldn't write results to the target directory output/{TARGET_DOMAIN}\n{e}")
+    print("Couldn't write results to the target directory output/{directory_name}\n{exception}".format(
+        directory_name=TARGET_DOMAIN, exception=e))
     sys.exit(1)
