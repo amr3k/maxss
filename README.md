@@ -10,8 +10,9 @@ This script fetches a url list from archive.org and applies a filter to get rid 
 
 ## Installation
 
-- Clone this repo
+- `git clone https://github.com/ShogunExecutioner/web-archive-cached-urls.git && cd web-archive-cached-urls`
 - Install a virtual environment (Optional) `python -m venv .env`
+- Install requests module
 
 ## Usage
 
