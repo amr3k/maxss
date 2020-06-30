@@ -1,4 +1,4 @@
-class FetchAndFilter():
+class FetchAndFilter:
     TARGET_DOMAIN = ""
     BASE_URL = "https://web.archive.org/cdx/search/cdx?url=*.{domain}&output=text&fl=original&collapse=urlkey"
     RAW_URLS = ""
@@ -6,11 +6,16 @@ class FetchAndFilter():
     STATIC_FILES = []
 
     def __init__(self, target_domain: str = None):
+        """
+        Search Archive.org for all links that includes provided domain name
+        and apply sanitizing filter to those links, then export to a text file.
+        :param target_domain: [Optional]
+        """
         self.check_target_domain(target_domain)
         self.load_extensions()
         self.fetch_url_list()
         self.sanitize_urls()
-        self.create_file()
+        self.create_output_dir()
         self.export_data()
 
     def check_target_domain(self, target_domain=None):
@@ -20,7 +25,7 @@ class FetchAndFilter():
         try:
             self.TARGET_DOMAIN = sys.argv[1]
         except IndexError:
-            helpers.error("Usage: {} target_domain".format(sys.argv[0]))
+            helpers.error(f"Usage: {sys.argv[0]} target_domain")
         if not re.match('^[a-z]+([a-z]+.)+[a-z]+$', self.TARGET_DOMAIN):
             helpers.error("Please type only the target domain like google.com or sub-domain like mail.google.com")
 
@@ -48,7 +53,7 @@ class FetchAndFilter():
         except requests.exceptions.RequestException:
             helpers.error("Couldn't connect to archive.org")
         except AssertionError:
-            helpers.error("Nothing found about {}".format(self.TARGET_DOMAIN))
+            helpers.error(f"Nothing found about {self.TARGET_DOMAIN}")
 
     def sanitize_urls(self):
         """
@@ -57,11 +62,11 @@ class FetchAndFilter():
         """
         for url in self.RAW_URLS:
             for extension in self.STATIC_FILES:
-                if url.find('.{}?'.format(extension)) > 0 or url.endswith('.{}'.format(extension)):
+                if url.find(f'.{extension}?') > 0 or url.endswith(f'.{extension}'):
                     self.FINAL_URLS.remove(url)
         self.FINAL_URLS = list(filter(None, self.FINAL_URLS))  # To remove empty strings
 
-    def create_file(self):
+    def create_output_dir(self):
         try:
             os.mkdir('output')
         except FileExistsError:
@@ -69,11 +74,10 @@ class FetchAndFilter():
 
     def export_data(self):
         try:
-            with open('output/{}.txt'.format(self.TARGET_DOMAIN), 'w') as output_file:
+            with open(f'output/{self.TARGET_DOMAIN}.txt', 'w') as output_file:
                 output_file.write('\n'.join(self.FINAL_URLS))
         except (FileNotFoundError, PermissionError, IOError) as e:
-            helpers.error("Couldn't write results to the target directory output/{directory_name}\n{exception}".format(
-                directory_name=self.TARGET_DOMAIN, exception=e))
+            helpers.error(f"Couldn't write results to the target directory output/{self.TARGET_DOMAIN}\n{e}")
 
 
 if __name__ == '__main__':
@@ -83,6 +87,5 @@ if __name__ == '__main__':
     import json
     import requests
     import helpers
-    import config
 
-    test_url = FetchAndFilter('oktob.io')
+    test_url = FetchAndFilter()
