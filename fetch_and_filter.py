@@ -11,32 +11,21 @@ class FetchAndFilter:
         and apply sanitizing filter to those links, then export to a text file.
         :param target_domain: [Optional]
         """
-        self.check_target_domain(target_domain)
+        helpers.update_status('Starting requester')
         self.load_extensions()
         self.fetch_url_list()
         self.sanitize_urls()
         self.create_output_dir()
         self.export_data()
 
-    def check_target_domain(self, target_domain=None):
-        if target_domain:
-            self.TARGET_DOMAIN = target_domain
-            return
-        try:
-            self.TARGET_DOMAIN = sys.argv[1]
-        except IndexError:
-            helpers.error(f"Usage: {sys.argv[0]} target_domain")
-        if not re.match('^[a-z]+([a-z]+.)+[a-z]+$', self.TARGET_DOMAIN):
-            helpers.error("Please type only the target domain like google.com or sub-domain like mail.google.com")
-
     def load_extensions(self):
         try:
             with open("static_file_extensions.json") as file:
                 self.STATIC_FILES = json.loads(file.read())  # Add more as you like
         except FileNotFoundError:
-            helpers.error("Couldn't find static_file_extensions.json")
+            helpers.failure("Couldn't find static_file_extensions.json")
         except Exception:
-            helpers.error("static_file_extensions.json file is corrupted")
+            helpers.failure("static_file_extensions.json file is corrupted")
 
     def fetch_url_list(self):
         """
@@ -51,9 +40,9 @@ class FetchAndFilter:
             self.RAW_URLS = list(set(map(str.strip, self.RAW_URLS.split('\n'))))
             self.FINAL_URLS = self.RAW_URLS.copy()
         except requests.exceptions.RequestException:
-            helpers.error("Couldn't connect to archive.org")
+            helpers.failure("Couldn't connect to archive.org")
         except AssertionError:
-            helpers.error(f"Nothing found about {self.TARGET_DOMAIN}")
+            helpers.failure(f"Nothing found about {self.TARGET_DOMAIN}")
 
     def sanitize_urls(self):
         """
@@ -77,7 +66,7 @@ class FetchAndFilter:
             with open(f'output/{self.TARGET_DOMAIN}.txt', 'w') as output_file:
                 output_file.write('\n'.join(self.FINAL_URLS))
         except (FileNotFoundError, PermissionError, IOError) as e:
-            helpers.error(f"Couldn't write results to the target directory output/{self.TARGET_DOMAIN}\n{e}")
+            helpers.failure(f"Couldn't write results to the target directory output/{self.TARGET_DOMAIN}\n{e}")
 
 
 if __name__ == '__main__':
@@ -88,4 +77,4 @@ if __name__ == '__main__':
     import requests
     import helpers
 
-    test_url = FetchAndFilter()
+    test_url = FetchAndFilter("oktob.io")
