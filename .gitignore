@@ -234,3 +234,4 @@ fabric.properties
 
 output/
 .idea/
+/test.py
