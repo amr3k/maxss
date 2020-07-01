@@ -2,34 +2,42 @@ import sys
 import os
 import re
 import logging
+import json
 from datetime import datetime
 from time import time
 
-try:
-    from halo import Halo
-except ModuleNotFoundError:
-    sys.exit("Missing package: halo")
-status = Halo()
-status.start()
+
+def init_halo():
+    try:
+        from halo import Halo
+    except ModuleNotFoundError:
+        sys.exit("Missing package: halo")
+
+
+init_halo()
+from halo import Halo
+
+live_status = Halo()
+live_status.start()
 
 
 def update_status(message: str):
-    status.text = message
+    live_status.text = message
     logging.info(message)
 
 
 def warning(message: str):
-    status.warn(message)
+    live_status.warn(message)
     logging.warning(message)
 
 
 def success(message: str):
-    status.succeed(text=message)
+    live_status.succeed(text=message)
     logging.info(message)
 
 
 def failure(message: str):
-    status.fail(text=message)
+    live_status.fail(text=message)
     logging.error(message)
     sys.exit(1)
 
@@ -46,7 +54,7 @@ def request_counter(url: str):
     global SENT_REQUESTS
 
     SENT_REQUESTS += 1
-    status.text = f"({SENT_REQUESTS} / {TOTAL_URLS}) {url[:120]}"
+    live_status.text = f"({SENT_REQUESTS} / {TOTAL_URLS}) {url[:120]}"
 
 
 def create_log_file(domain):

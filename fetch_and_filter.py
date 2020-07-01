@@ -1,18 +1,22 @@
+from helpers import *
+import requests
+
+
 class FetchAndFilter:
-    TARGET_DOMAIN = ""
+    file_path = ''
     BASE_URL = "https://web.archive.org/cdx/search/cdx?url=*.{domain}&output=text&fl=original&collapse=urlkey"
     RAW_URLS = ""
     FINAL_URLS = []
     STATIC_FILES = []
 
-    def __init__(self, target_domain: str = None):
+    def __init__(self, target_domain: str):
         """
         Search Archive.org for all links that includes provided domain name
         and apply sanitizing filter to those links, then export to a text file.
         :param target_domain: [Optional]
         """
-        self.file_path = ''
-        helpers.update_status('Starting requester')
+        self.TARGET_DOMAIN = target_domain
+        update_status('Starting requester')
         self.load_extensions()
         self.fetch_url_list()
         self.sanitize_urls()
@@ -22,11 +26,11 @@ class FetchAndFilter:
     def load_extensions(self):
         try:
             with open(f"{sys.path[0]}/static_file_extensions.json") as file:
-                self.STATIC_FILES = json.loads(file.read())  # Add more as you like
+                self.STATIC_FILES = json.load(file)  # Add more as you like
         except FileNotFoundError:
-            helpers.failure("Couldn't find static_file_extensions.json")
-        except Exception:
-            helpers.failure("static_file_extensions.json file is corrupted")
+            failure("Couldn't find static_file_extensions.json")
+        except Exception as e:
+            failure(f"static_file_extensions.json file is corrupted\nFull details:\t{e.__str__()}")
 
     def fetch_url_list(self):
         """
@@ -41,9 +45,9 @@ class FetchAndFilter:
             self.RAW_URLS = list(set(map(str.strip, self.RAW_URLS.split('\n'))))
             self.FINAL_URLS = self.RAW_URLS.copy()
         except requests.exceptions.RequestException:
-            helpers.failure("Couldn't connect to archive.org")
+            failure("Couldn't connect to archive.org")
         except AssertionError:
-            helpers.failure(f"Nothing found about {self.TARGET_DOMAIN}")
+            failure(f"Nothing found about {self.TARGET_DOMAIN}")
 
     def sanitize_urls(self):
         """
@@ -56,7 +60,8 @@ class FetchAndFilter:
                     self.FINAL_URLS.remove(url)
         self.FINAL_URLS = list(filter(None, self.FINAL_URLS))  # To remove empty strings
 
-    def create_output_dir(self):
+    @staticmethod
+    def create_output_dir():
         try:
             os.mkdir('output')
         except FileExistsError:
@@ -64,20 +69,12 @@ class FetchAndFilter:
 
     def export_data(self):
         try:
-            file_path = f"{sys.path[0]}/output/{self.TARGET_DOMAIN}.txt"
-            with open(file_path, 'w') as output_file:
+            self.file_path = f"{sys.path[0]}/output/{self.TARGET_DOMAIN}.txt"
+            with open(self.file_path, 'w') as output_file:
                 output_file.write('\n'.join(self.FINAL_URLS))
-                self.file_path = file_path
         except (FileNotFoundError, PermissionError, IOError) as e:
-            helpers.failure(f"Couldn't write results to the target directory output/{self.TARGET_DOMAIN}\n{e}")
+            failure(f"Couldn't write results to the target directory output/{self.TARGET_DOMAIN}\n{e}")
 
 
 if __name__ == '__main__':
-    import re
-    import sys
-    import os
-    import json
-    import requests
-    import helpers
-
-    test_url = FetchAndFilter("video.techcrunch.com")
+    test_url = FetchAndFilter(target_domain="video.techcrunch.com")
