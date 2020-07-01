@@ -37,6 +37,17 @@ def failure(message: str):
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 CURRENT_TIME = datetime.fromtimestamp(time()).strftime("%Y%m%d%H%M")
 
+TOTAL_URLS = 0
+SENT_REQUESTS = 0
+
+
+def request_counter(url: str):
+    global TOTAL_URLS
+    global SENT_REQUESTS
+
+    SENT_REQUESTS += 1
+    status.text = f"({SENT_REQUESTS} / {TOTAL_URLS}) {url[:120]}"
+
 
 def create_log_file(domain):
     logging.basicConfig(format="%(asctime)s (%(process)d) [%(filename)s:%(lineno)3d] [%(levelname)s]: %(message)s",
