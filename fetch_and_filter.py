@@ -11,6 +11,7 @@ class FetchAndFilter:
         and apply sanitizing filter to those links, then export to a text file.
         :param target_domain: [Optional]
         """
+        self.file_path = ''
         helpers.update_status('Starting requester')
         self.load_extensions()
         self.fetch_url_list()
@@ -20,7 +21,7 @@ class FetchAndFilter:
 
     def load_extensions(self):
         try:
-            with open("static_file_extensions.json") as file:
+            with open(f"{sys.path[0]}/static_file_extensions.json") as file:
                 self.STATIC_FILES = json.loads(file.read())  # Add more as you like
         except FileNotFoundError:
             helpers.failure("Couldn't find static_file_extensions.json")
@@ -63,8 +64,10 @@ class FetchAndFilter:
 
     def export_data(self):
         try:
-            with open(f'output/{self.TARGET_DOMAIN}.txt', 'w') as output_file:
+            file_path = f"{sys.path[0]}/output/{self.TARGET_DOMAIN}.txt"
+            with open(file_path, 'w') as output_file:
                 output_file.write('\n'.join(self.FINAL_URLS))
+                self.file_path = file_path
         except (FileNotFoundError, PermissionError, IOError) as e:
             helpers.failure(f"Couldn't write results to the target directory output/{self.TARGET_DOMAIN}\n{e}")
 
@@ -77,4 +80,4 @@ if __name__ == '__main__':
     import requests
     import helpers
 
-    test_url = FetchAndFilter("oktob.io")
+    test_url = FetchAndFilter("video.techcrunch.com")
