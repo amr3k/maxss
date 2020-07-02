@@ -4,6 +4,7 @@ class InjectXSS:
 
     def __init__(self, url_list: list):
         self.url_list = url_list
+        self.total_url_count = len(url_list)
         try:
             self.proxy = config.proxy
             self.headers = config.headers
@@ -31,17 +32,16 @@ class InjectXSS:
 
     async def new_request(self, url, session):
         try:
-            async with session.get(url) as response:
-                request_counter(url)
-                return response
-        except Exception as e:
-            failure(e.__str__())
+            async with session.get(url):
+                pass
+        except asyncio.exceptions.TimeoutError:
+            pass
 
     async def on_request_start(self, session, trace_config_ctx, params):
         pass
 
     async def on_request_finish(self, session, trace_config_ctx, params):
-        request_counter(params.url.human_repr())
+        request_counter(url=params.url.human_repr(), total_count=self.total_url_count)
 
 
 if __name__ == '__main__':
