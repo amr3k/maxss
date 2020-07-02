@@ -66,6 +66,16 @@ def usage_msg():
     sys.exit(f"Usage: {sys.argv[0]} target_domain")
 
 
+def extension_list() -> list:
+    try:
+        with open(f"{sys.path[0]}/static/extensions.json") as file:
+            return json.load(file)  # Add more as you like
+    except FileNotFoundError:
+        failure("Couldn't find extensions.json")
+    except Exception as e:
+        failure(f"extensions.json file is corrupted\nFull details:\t{e.__str__()}")
+
+
 def check_target_domain(target_domain):
     update_status("Checking domain validity")
     if not re.match('^[a-z]+([a-z]+.)+[a-z]+$', target_domain):
