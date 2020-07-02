@@ -21,7 +21,8 @@ class InjectXSS:
         simple_trace_config.on_request_start.append(self.on_request_start)
         simple_trace_config.on_request_end.append(self.on_request_finish)
 
-        connector = aiohttp.TCPConnector(limit=config.maximum_concurrent_connections, keepalive_timeout=self.timeout)
+        connector = aiohttp.TCPConnector(limit=config.maximum_concurrent_connections,
+                                         keepalive_timeout=self.timeout.total)
         async with aiohttp.ClientSession(connector=connector, timeout=self.timeout,
                                          trace_configs=[simple_trace_config]) as session:
             for url in self.url_list:
@@ -40,7 +41,7 @@ class InjectXSS:
         pass
 
     async def on_request_finish(self, session, trace_config_ctx, params):
-        request_counter(params.url)
+        request_counter(params.url.human_repr())
 
 
 if __name__ == '__main__':
