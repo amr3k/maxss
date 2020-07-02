@@ -7,7 +7,6 @@ class FetchAndFilter:
     BASE_URL = "https://web.archive.org/cdx/search/cdx?url=*.{domain}&output=text&fl=original&collapse=urlkey"
     RAW_URLS = ""
     FINAL_URLS = []
-    STATIC_FILES = []
 
     def __init__(self, target_domain: str):
         """
@@ -16,21 +15,15 @@ class FetchAndFilter:
         :param target_domain: [Optional]
         """
         self.TARGET_DOMAIN = target_domain
+        self.file_path = f"{sys.path[0]}/output/{self.TARGET_DOMAIN}.txt"
+        if self.cached_file():
+            update_status(f"Found cached file at ({self.file_path}), skipping archive.org")
+            return
         update_status('Starting requester')
-        self.load_extensions()
         self.fetch_url_list()
         self.sanitize_urls()
         self.create_output_dir()
         self.export_data()
-
-    def load_extensions(self):
-        try:
-            with open(f"{sys.path[0]}/static_file_extensions.json") as file:
-                self.STATIC_FILES = json.load(file)  # Add more as you like
-        except FileNotFoundError:
-            failure("Couldn't find static_file_extensions.json")
-        except Exception as e:
-            failure(f"static_file_extensions.json file is corrupted\nFull details:\t{e.__str__()}")
 
     def fetch_url_list(self):
         """
@@ -55,7 +48,7 @@ class FetchAndFilter:
         :return:
         """
         for url in self.RAW_URLS:
-            for extension in self.STATIC_FILES:
+            for extension in extension_list():
                 if url.find(f'.{extension}?') > 0 or url.endswith(f'.{extension}'):
                     self.FINAL_URLS.remove(url)
         self.FINAL_URLS = list(filter(None, self.FINAL_URLS))  # To remove empty strings
@@ -69,11 +62,13 @@ class FetchAndFilter:
 
     def export_data(self):
         try:
-            self.file_path = f"{sys.path[0]}/output/{self.TARGET_DOMAIN}.txt"
             with open(self.file_path, 'w') as output_file:
                 output_file.write('\n'.join(self.FINAL_URLS))
         except (FileNotFoundError, PermissionError, IOError) as e:
             failure(f"Couldn't write results to the target directory output/{self.TARGET_DOMAIN}\n{e}")
+
+    def cached_file(self):
+        return os.path.isfile(self.file_path)
 
 
 if __name__ == '__main__':
