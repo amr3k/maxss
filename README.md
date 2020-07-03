@@ -5,8 +5,8 @@ This script fetches a url list from archive.org and applies a filter to get rid 
 ## Requirements
 
 - Linux shell (bash/zsh)
-- Python3
-- requests
+- Python 3.7+
+- [XSShunter account](https://xsshunter.com) (or your custom blind xss payload)
 
 ## Installation
 
@@ -18,3 +18,22 @@ This script fetches a url list from archive.org and applies a filter to get rid 
 ## Usage
 
 `python cached_urls.py target_domain`
+
+## TODO list
+
+- WAF detector
+- Proxy
+- Multiple payloads support
+- Command line arguments
+- Option to use a file directly instead of archive.org
+- Code optimization
+- Advanced Logging
+- Rewriting this README
+- Documentation
+
+## Special thanks
+
+-
+-
+-
+-
