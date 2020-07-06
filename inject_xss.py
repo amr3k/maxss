@@ -1,3 +1,15 @@
+import asyncio
+
+import config
+import helpers
+
+try:
+    import aiohttp
+    from aiohttp import client_exceptions
+except ModuleNotFoundError:
+    helpers.failure("Missing package: aiohttp")
+
+
 class InjectXSS:
     proxy = {}
     headers = []
@@ -9,7 +21,7 @@ class InjectXSS:
             self.headers = config.headers
             self.timeout = aiohttp.ClientTimeout(total=config.timeout)
         except Exception as e:
-            failure(f"Check config.py \n{e.__str__()}")
+            helpers.failure(f"Check config.py \n{e.__str__()}")
 
         loop = asyncio.get_event_loop()
         future = asyncio.ensure_future(self.run())
@@ -37,7 +49,8 @@ class InjectXSS:
         try:
             async with session.get(url):
                 pass
-        except (asyncio.exceptions.TimeoutError, client_exceptions.ServerDisconnectedError):
+        except (asyncio.exceptions.TimeoutError, client_exceptions.ServerDisconnectedError,
+                client_exceptions.ClientConnectorError):
             pass
 
     @staticmethod
@@ -46,39 +59,4 @@ class InjectXSS:
 
     @staticmethod
     async def on_request_finish(session, trace_config_ctx, params):
-        request_counter(url=params.url.human_repr())
-
-
-def distribute(url_list: list):
-    for i in range(0, len(url_list), config.maximum_concurrent_connections):
-        injector = InjectXSS(url_list=url_list[i:i + config.maximum_concurrent_connections])
-
-
-if __name__ == '__main__':
-    import asyncio
-    import config
-    import helpers
-    from fetch_and_filter import FetchAndFilter
-    from helpers import *
-
-    try:
-        import aiohttp
-        from aiohttp import client_exceptions
-    except ModuleNotFoundError:
-        failure("Missing package: aiohttp")
-    try:
-        sys.argv.append("udache.com")  # TODO delete this line
-        target_domain = sys.argv[1]
-        check_target_domain(target_domain)
-        create_log_file(target_domain)
-    except IndexError:
-        usage_msg()
-    try:
-        get_urls = FetchAndFilter(target_domain=target_domain)
-        with open(get_urls.file_path) as file:
-            url_list = list(set(map(str.strip, file.readlines())))
-        helpers.URL_COUNT = len(url_list)
-        distribute(url_list=url_list)
-        success("All Done!")
-    except KeyboardInterrupt:
-        failure("Interrupted by user")
+        helpers.request_counter(url=params.url.human_repr())
