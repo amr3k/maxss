@@ -1,8 +1,7 @@
-import sys
-import os
-import re
-import logging
 import json
+import logging
+import re
+import sys
 from datetime import datetime
 from time import time
 
@@ -63,10 +62,6 @@ def create_log_file(domain):
                         filemode="w", datefmt="[%Y-%m-%d %H:%M]")
 
 
-def usage_msg():
-    sys.exit(f"Usage: {sys.argv[0]} target_domain")
-
-
 def extension_list() -> list:
     try:
         with open(f"{sys.path[0]}/static/extensions.json") as file:
@@ -79,5 +74,8 @@ def extension_list() -> list:
 
 def check_target_domain(target_domain):
     update_status("Checking domain validity")
-    if not re.match('^[a-z]+([a-z]+.)+[a-z]+$', target_domain):
-        failure("Please type only the target domain like google.com or sub-domain like mail.google.com")
+    try:
+        if not re.match('^[a-z]+([a-z]+.)+[a-z]+$', target_domain):
+            failure("Please type only the target domain like google.com or sub-domain like mail.google.com")
+    except TypeError:
+        failure("Invalid domain")
