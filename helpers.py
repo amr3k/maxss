@@ -123,9 +123,7 @@ def validate_urls(url_list) -> list:
         for u in url_list:
             if not u.startswith('http'):
                 u = f'http://{u}'
-            if re.match(
-                    '^(http(s)?):\/\/[(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}([-a-zA-Z0-9@:%_\+.~#?&//=]*)$',
-                    u):
+            if re.match('^https?://[a-zA-Z0-9@:_]{2,256}\.[a-z]{2,6}[-a-zA-Z0-9@:%_+.~#?&/=]*$', u):
                 final_list.append(re.sub(':[0-9]{2,5}', '', u))
     except (TypeError, UnicodeError):
         failure('Failed while examining URL list')
@@ -133,10 +131,6 @@ def validate_urls(url_list) -> list:
 
 
 def sanitize_urls(url_list) -> list:
-    """
-    Remove unnecessary links like css, jpg files
-    :return:
-    """
     update_status("Removing unnecessary links")
     final_urls = url_list.copy()
     for url in url_list:
