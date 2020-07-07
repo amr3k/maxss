@@ -19,24 +19,28 @@ def distribute(url_list: list):
     for h in config_loader.headers():
         helpers.update_status(f"First round with payload: ({h['Referral']})")
         for i in range(0, helpers.URL_COUNT, mcc):
-            injector = Injector(url_list=final_list[i:i + mcc], headers=h)
+            Injector(url_list=final_list[i:i + mcc], headers=h)
 
 
 @click.command()
 @click.version_option(version='1.0.0')
-@click.option('--domain', '-d', required=True, help="Target domain")
+@click.option('--domain', '-d', help="Target domain")
 @click.option('--archive', '-a', default=False, show_default=True, is_flag=True,
               help="Fetch latest update from archive.org (skipping existing cached file)")
 @click.option('--file', '-f',
               help="If you have a file containing list of URLs, you can provide it here and skip searching Archive.org")
 def start(domain, archive=False, file=None):
     try:
-        helpers.create_log_file(domain)
-        helpers.check_target_domain(domain)
         if file:
-            with open(file) as raw_file:
-                url_list = list(set(map(str.strip, raw_file.readlines())))
+            try:
+                helpers.create_log_file(file[file.rfind('/') + 1:])
+                with open(file) as raw_file:
+                    url_list = list(set(map(str.strip, raw_file.readlines())))
+            except (IsADirectoryError, FileNotFoundError, PermissionError, BufferError):
+                helpers.failure(f"Could not open {file}")
         else:
+            helpers.create_log_file(domain)
+            helpers.check_target_domain(domain)
             if archive:
                 get_urls = WebArchive(target_domain=domain, force_fetch=True)
             else:
