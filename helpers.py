@@ -2,25 +2,27 @@ import json
 import logging
 import re
 import sys
-from os.path import sep
 from datetime import datetime
+from os.path import sep
 from time import time
+
 from halo import Halo
 
 CURRENT_DIR = sys.path[0]
 CURRENT_TIME = datetime.fromtimestamp(time()).strftime("%Y%m%d%H%M")
-
+LOG_FILE_PATH = ""
 URL_COUNT = 0
 SENT_REQUESTS = 0
 
 SUCCESSFUL_ATTEMPTS = 0
 FAILED_ATTEMPTS = 0
 
-live_status = Halo()
+live_status = Halo(spinner='dots12', color='white')
 live_status.start()
 
 
 def update_status(message: str):
+    live_status.text_color = 'white'
     live_status.text = message
     logging.info(message)
 
@@ -43,15 +45,18 @@ def final_stats():
         success_rate = "0%"
     live_status.warn(f"Success rate = {success_rate}")
     logging.info(f"Success rate = {success_rate}")
+    live_status.warn(f"Full log file: {LOG_FILE_PATH}")
 
 
 def success(message: str):
+    live_status.text_color = 'blue'
     live_status.succeed(text=message)
     final_stats()
     logging.info(message)
 
 
 def failure(message: str):
+    live_status.text_color = 'red'
     live_status.fail(text=message)
     logging.error(message)
     final_stats()
@@ -67,6 +72,7 @@ def failed_request(url, exception):
     global FAILED_ATTEMPTS
 
     increase_sent_request_by_1()
+    live_status.text_color = 'red'
     live_status.text = f"({SENT_REQUESTS}/{URL_COUNT}) Could not reach {url}"
     FAILED_ATTEMPTS += 1
     logging.warning(f"Could not reach {url} {exception}")
@@ -76,21 +82,24 @@ def successful_request(url: str):
     global SUCCESSFUL_ATTEMPTS
 
     increase_sent_request_by_1()
+    live_status.text_color = 'green'
     live_status.text = f"({SENT_REQUESTS}/{URL_COUNT}) Sending to {url}"
     SUCCESSFUL_ATTEMPTS += 1
     logging.info(f"Sending to {url}")
 
 
 def create_log_file(domain):
+    global LOG_FILE_PATH
+    LOG_FILE_PATH = f"{CURRENT_DIR}{sep}logs{sep}{domain}_{CURRENT_TIME}.log"
     logging.basicConfig(format="%(asctime)s (%(process)d) [%(filename)s:%(lineno)3d] [%(levelname)s]: %(message)s",
                         level=logging.INFO,
-                        filename=f"{CURRENT_DIR}{sep}logs{sep}{domain}_{CURRENT_TIME}.log",
+                        filename=LOG_FILE_PATH,
                         filemode="w", datefmt="[%Y-%m-%d %H:%M]")
 
 
 def extension_list() -> list:
     try:
-        with open(f"{sys.path[0]}{sep}static{sep}extensions.json") as file:
+        with open(f"{CURRENT_DIR}{sep}static{sep}extensions.json") as file:
             return list(json.load(file))
     except FileNotFoundError:
         failure("Couldn't find extensions.json")
