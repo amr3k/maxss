@@ -10,10 +10,11 @@ This script fetches a url list from archive.org and applies a filter to get rid 
 
 ## Installation
 
-- `git clone https://github.com/ShogunExecutioner/web-archive-cached-urls.git && cd web-archive-cached-urls`
+- `git clone https://github.com/ShogunExecutioner/noob-xss.git && cd noob-xss`
 - Install a virtual environment (Optional) `python -m venv .env`
-- Install requests module
-- Check `static_file_extensions.json` file if you want to add/remove extensions for the filter.
+- `pip install -r requirements.txt`
+- Check `static/extensions.json` file if you want to add/remove extensions for the filter.
+- Edit `static/config.json` add your own blind xss payload
 
 ## Usage
 

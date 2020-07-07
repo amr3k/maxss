@@ -1,6 +1,6 @@
 import asyncio
 
-import config
+import config_loader
 import helpers
 
 try:
@@ -14,12 +14,13 @@ class Injector:
     __proxy = {}
     __headers = []
 
-    def __init__(self, url_list: list):
+    def __init__(self, url_list: list, headers: dict):
         self.__url_list = url_list
         try:
-            self.__proxy = config.proxy
-            self.__headers = config.headers
-            self.__timeout = aiohttp.ClientTimeout(total=config.timeout)
+            c = config_loader.USER_CONFIGS
+            self.__proxy = c.get('http-proxy')
+            self.__timeout = aiohttp.ClientTimeout(total=c.get('request-timeout'))
+            self.__headers = headers
         except Exception as e:
             helpers.failure(f"Check config.py \n{e.__str__()}")
 
@@ -28,7 +29,7 @@ class Injector:
         loop.run_until_complete(future)
 
     async def __run(self):
-        sem = asyncio.BoundedSemaphore(config.maximum_concurrent_connections)
+        sem = asyncio.BoundedSemaphore(config_loader.USER_CONFIGS.get('maximum_concurrent_connections'))
         tasks = []
         simple_trace_config = aiohttp.TraceConfig()
         simple_trace_config.on_request_start.append(self.__on_request_start)
