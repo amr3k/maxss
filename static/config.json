@@ -1,6 +1,5 @@
 {
-  "http-proxy": "127.0.0.1:8080",
-  "timeout": 10,
-  "max-connections": 1000,
-  "xss-payload": ""
+  "http-proxy": "",
+  "request-timeout": 10,
+  "maximum-concurrent-connections": 1000
 }
