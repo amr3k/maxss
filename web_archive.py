@@ -22,7 +22,8 @@ class WebArchive:
         :param target_domain: [Optional]
         """
         self.TARGET_DOMAIN = target_domain
-        self.file_path = f"{sys.path[0]}/output/{self.TARGET_DOMAIN}.txt"
+        ds = os.path.sep
+        self.file_path = f"{sys.path[0]}{ds}output{ds}{self.TARGET_DOMAIN}.txt"
         if self.cached_file() and not force_fetch:
             helpers.update_status(f"Found cached file at ({self.file_path}), skipping archive.org")
             return
@@ -63,11 +64,8 @@ class WebArchive:
             with open(self.file_path, 'w') as output_file:
                 output_file.write('\n'.join(self.FINAL_URLS))
         except (FileNotFoundError, PermissionError, IOError) as e:
-            helpers.failure(f"Couldn't write results to the target directory output/{self.TARGET_DOMAIN}\n{e}")
+            helpers.failure(
+                f"Could not write results to the target directory output{os.path.sep}{self.TARGET_DOMAIN}\n{e}")
 
     def cached_file(self):
         return os.path.isfile(self.file_path)
-
-
-if __name__ == '__main__':
-    test_url = WebArchive(target_domain="video.techcrunch.com")

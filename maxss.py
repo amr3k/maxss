@@ -1,4 +1,5 @@
 import sys
+from os.path import sep
 
 try:
     import helpers
@@ -17,7 +18,7 @@ def distribute(url_list: list):
     mcc = config_loader.USER_CONFIGS.get('maximum_concurrent_connections')
     helpers.update_status("Getting headers")
     for h in config_loader.headers():
-        helpers.update_status(f"First round with payload: ({h['Referral']})")
+        helpers.update_status(f"First round with payload: ({h.get('Referral')})")
         for i in range(0, helpers.URL_COUNT, mcc):
             Injector(url_list=final_list[i:i + mcc], headers=h)
 
@@ -31,9 +32,10 @@ def distribute(url_list: list):
               help="If you have a file containing list of URLs, you can provide it here and skip searching Archive.org")
 def start(domain, archive=False, file=None):
     try:
+        assert sys.version_info >= (3, 7)
         if file:
             try:
-                helpers.create_log_file(file[file.rfind('/') + 1:])
+                helpers.create_log_file(file[file.rfind(sep) + 1:])
                 with open(file) as raw_file:
                     url_list = list(set(map(str.strip, raw_file.readlines())))
             except (IsADirectoryError, FileNotFoundError, PermissionError, BufferError):
@@ -41,14 +43,13 @@ def start(domain, archive=False, file=None):
         else:
             helpers.create_log_file(domain)
             helpers.check_target_domain(domain)
-            if archive:
-                get_urls = WebArchive(target_domain=domain, force_fetch=True)
-            else:
-                get_urls = WebArchive(target_domain=domain)
+            get_urls = WebArchive(target_domain=domain, force_fetch=archive)
             with open(get_urls.file_path) as file:
                 url_list = list(set(map(str.strip, file.readlines())))
         distribute(url_list=url_list)
         helpers.success("All Done!")
+    except AssertionError:
+        sys.exit("Sorry, you need at least Python 3.7 to run this script")
     except KeyboardInterrupt:
         helpers.failure("Interrupted by user")
 
