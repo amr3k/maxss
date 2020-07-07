@@ -1,5 +1,5 @@
 {
   "http-proxy": "",
-  "request-timeout": 10,
+  "request-timeout": 10.0,
   "maximum-concurrent-connections": 1000
 }

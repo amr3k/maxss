@@ -2,6 +2,7 @@ import json
 import logging
 import re
 import sys
+from os.path import sep
 from datetime import datetime
 from time import time
 
@@ -71,13 +72,13 @@ def increase_sent_request_by_1():
     SENT_REQUESTS += 1
 
 
-def failed_request(url):
+def failed_request(url, exception):
     global FAILED_ATTEMPTS
 
     increase_sent_request_by_1()
     live_status.text = f"({SENT_REQUESTS}/{URL_COUNT}) Could not reach {url}"
     FAILED_ATTEMPTS += 1
-    logging.warning(f"Could not reach {url}")
+    logging.warning(f"Could not reach {url} {exception}")
 
 
 def successful_request(url: str):
@@ -92,13 +93,13 @@ def successful_request(url: str):
 def create_log_file(domain):
     logging.basicConfig(format="%(asctime)s (%(process)d) [%(filename)s:%(lineno)3d] [%(levelname)s]: %(message)s",
                         level=logging.INFO,
-                        filename=f"{CURRENT_DIR}/logs/{domain}_{CURRENT_TIME}.log",
+                        filename=f"{CURRENT_DIR}{sep}logs{sep}{domain}_{CURRENT_TIME}.log",
                         filemode="w", datefmt="[%Y-%m-%d %H:%M]")
 
 
 def extension_list() -> list:
     try:
-        with open(f"{sys.path[0]}/static/extensions.json") as file:
+        with open(f"{sys.path[0]}{sep}static{sep}extensions.json") as file:
             return list(json.load(file))
     except FileNotFoundError:
         failure("Couldn't find extensions.json")
