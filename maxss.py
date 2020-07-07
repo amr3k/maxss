@@ -4,8 +4,8 @@ from os.path import sep
 try:
     import helpers
     import config_loader
-    from web_archive import WebArchive
-    from injector import Injector
+    import web_archive
+    import injector
     import click
 except ModuleNotFoundError:
     sys.exit("Please install missing packages with pip install -r requirements.txt")
@@ -15,12 +15,12 @@ def distribute(url_list: list):
     final_list = helpers.validate_urls(url_list)
     helpers.URL_COUNT = len(final_list)
     helpers.update_status(f"Validating URLS is done, now I have {helpers.URL_COUNT} to work with")
-    mcc = config_loader.USER_CONFIGS.get('maximum_concurrent_connections')
+    mcc = config_loader.USER_CONFIGS.get('maximum-concurrent-connections')
     helpers.update_status("Getting headers")
     for h in config_loader.headers():
-        helpers.update_status(f"First round with payload: ({h.get('Referral')})")
+        helpers.update_status(f"Trying payload: ({h.get('Referral')})")
         for i in range(0, helpers.URL_COUNT, mcc):
-            Injector(url_list=final_list[i:i + mcc], headers=h)
+            injector.Injector(url_list=final_list[i:i + mcc], headers=h)
 
 
 @click.command()
@@ -43,7 +43,7 @@ def start(domain, archive=False, file=None):
         else:
             helpers.create_log_file(domain)
             helpers.check_target_domain(domain)
-            get_urls = WebArchive(target_domain=domain, force_fetch=archive)
+            get_urls = web_archive.WebArchive(target_domain=domain, force_fetch=archive)
             with open(get_urls.file_path) as file:
                 url_list = list(set(map(str.strip, file.readlines())))
         distribute(url_list=url_list)
