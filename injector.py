@@ -1,13 +1,8 @@
 import asyncio
-
+import aiohttp
+from aiohttp import client_exceptions
 import config_loader
 import helpers
-
-try:
-    import aiohttp
-    from aiohttp import client_exceptions
-except ModuleNotFoundError:
-    helpers.missing_module()
 
 
 class Injector:
@@ -27,7 +22,7 @@ class Injector:
         loop.run_until_complete(future)
 
     async def __run(self):
-        sem = asyncio.BoundedSemaphore(config_loader.USER_CONFIGS.get('maximum_concurrent_connections'))
+        sem = asyncio.BoundedSemaphore(config_loader.USER_CONFIGS.get('maximum-concurrent-connections'))
         tasks = []
         simple_trace_config = aiohttp.TraceConfig()
         simple_trace_config.on_request_start.append(self.__on_request_start)

@@ -5,6 +5,7 @@ import sys
 from os.path import sep
 from datetime import datetime
 from time import time
+from halo import Halo
 
 CURRENT_DIR = sys.path[0]
 CURRENT_TIME = datetime.fromtimestamp(time()).strftime("%Y%m%d%H%M")
@@ -14,16 +15,6 @@ SENT_REQUESTS = 0
 
 SUCCESSFUL_ATTEMPTS = 0
 FAILED_ATTEMPTS = 0
-
-
-def missing_module():
-    sys.exit("Please install required packages with pip install -r requirements.txt")
-
-
-try:
-    from halo import Halo
-except ModuleNotFoundError:
-    missing_module()
 
 live_status = Halo()
 live_status.start()
