@@ -39,17 +39,17 @@ def warning(message: str):
 
 
 def final_stats():
-    warning(f"Total URLS: {URL_COUNT}")
+    live_status.warn(f"Total URLS: {URL_COUNT}")
     logging.info(f"Total URLS: {URL_COUNT}")
-    warning(f"Successful attempts: {SUCCESSFUL_ATTEMPTS}")
+    live_status.warn(f"Successful attempts: {SUCCESSFUL_ATTEMPTS}")
     logging.info(f"Successful attempts: {SUCCESSFUL_ATTEMPTS}")
-    warning(f"Failed attempts: {FAILED_ATTEMPTS}")
+    live_status.warn(f"Failed attempts: {FAILED_ATTEMPTS}")
     logging.info(f"Failed attempts: {FAILED_ATTEMPTS}")
     try:
         success_rate = f"{(SUCCESSFUL_ATTEMPTS / URL_COUNT):.0%}"
     except ZeroDivisionError:
         success_rate = "0%"
-    warning(f"Success rate = {success_rate}")
+    live_status.warn(f"Success rate = {success_rate}")
     logging.info(f"Success rate = {success_rate}")
 
 
