@@ -1,12 +1,7 @@
 import os
 import sys
-
+import requests
 import helpers
-
-try:
-    import requests
-except ModuleNotFoundError:
-    helpers.missing_module()
 
 
 class WebArchive:
