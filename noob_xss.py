@@ -2,7 +2,7 @@ import sys
 
 try:
     import helpers
-    import config
+    import config_loader
     from web_archive import WebArchive
     from injector import Injector
     import click
@@ -14,9 +14,12 @@ def distribute(url_list: list):
     final_list = helpers.validate_urls(url_list)
     helpers.URL_COUNT = len(final_list)
     helpers.update_status(f"Validating URLS is done, now I have {helpers.URL_COUNT} to work with")
-
-    for i in range(0, helpers.URL_COUNT, config.maximum_concurrent_connections):
-        injector = Injector(url_list=final_list[i:i + config.maximum_concurrent_connections])
+    mcc = config_loader.USER_CONFIGS.get('maximum_concurrent_connections')
+    helpers.update_status("Getting headers")
+    for h in config_loader.headers():
+        helpers.update_status(f"First round with payload: ({h['Referral']})")
+        for i in range(0, helpers.URL_COUNT, mcc):
+            injector = Injector(url_list=final_list[i:i + mcc], headers=h)
 
 
 @click.command()
