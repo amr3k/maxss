@@ -11,8 +11,6 @@ except ModuleNotFoundError:
 
 
 class Injector:
-    __proxy = {}
-    __headers = []
 
     def __init__(self, url_list: list, headers: dict):
         self.__url_list = url_list
@@ -46,14 +44,13 @@ class Injector:
         async with sem:
             await self.__new_request(url=url, session=session)
 
-    @staticmethod
-    async def __new_request(url, session):
+    async def __new_request(self, url, session):
         try:
-            async with session.get(url):
+            async with session.get(url, proxy=self.__proxy, headers=self.__headers):
                 pass
         except (asyncio.exceptions.TimeoutError, client_exceptions.ServerDisconnectedError,
-                client_exceptions.ClientConnectorError, client_exceptions.ClientOSError):
-            helpers.failed_request(url=url)
+                client_exceptions.ClientConnectorError, client_exceptions.ClientOSError) as e:
+            helpers.failed_request(url=url, exception=e.__str__())
 
     @staticmethod
     async def __on_request_start(session, trace_config_ctx, params):
