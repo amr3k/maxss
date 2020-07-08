@@ -46,4 +46,5 @@ def headers() -> list:
             'User-Agent': f"{choice(user_agents())}{p}",
             'Referral': p
         })
+    helpers.HEADER_COUNT = len(headers_list)
     return headers_list
