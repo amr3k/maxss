@@ -1,4 +1,3 @@
-from multiprocessing import Process, cpu_count
 from os.path import sep
 from sys import exit, version_info
 
@@ -13,25 +12,12 @@ except ModuleNotFoundError:
 
 
 def distribute(url_list: list):
-    injector.Injector(url_list=final_list, headers=config_loader.headers()[0])
+    helpers.URL_COUNT = len(url_list)
+    helpers.update_status(f"Now I have {helpers.URL_COUNT} to work with")
     for h in config_loader.headers():
+        helpers.SENT_REQUESTS = 0
         helpers.update_status(f"Trying payload: ({h.get('Referral')})")
-        injector.Injector(url_list=final_list, headers=h)
-        cores = cpu_count()
-        if cores == 1:
-            p = Process(target=injector.Injector, args=(final_list, h,))
-            p.start()
-            p.join()
-        else:
-            process_list = []
-            for i in range(cores):
-                chunk_list = final_list[i * helpers.URL_COUNT // cores:(i + 1) * helpers.URL_COUNT // cores]
-                process_list.append(
-                    Process(target=injector.Injector, args=(chunk_list, h,)))
-            for p in process_list:
-                p.start()
-            for p in process_list:
-                p.join()
+        injector.Injector(url_list=url_list, headers=h)
 
 
 @click.command()
@@ -55,12 +41,8 @@ def start(domain, archive=False, file=None):
         else:
             helpers.create_log_file(domain)
             helpers.check_target_domain(domain)
-            get_urls = web_archive.WebArchive(target_domain=domain, force_fetch=archive)
-            url_list = get_urls.FINAL_URLS
-
-        helpers.URL_COUNT = len(url_list)
-        helpers.update_status(f"Now I have {helpers.URL_COUNT} to work with")
-
+            wa = web_archive.WebArchive(target_domain=domain, force_fetch=archive)
+            url_list = wa.FINAL_URLS
         distribute(url_list=url_list)
         helpers.success("All Done!")
     except AssertionError:
