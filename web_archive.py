@@ -11,7 +11,7 @@ from helpers import update_status, failure, validate_urls
 class WebArchive:
     FINAL_URLS = []
 
-    def __init__(self, target_domain: str, force_fetch=False):
+    def __init__(self, target_domain: str, force_fetch: bool = False):
         """
         Search Archive.org for all links that includes provided domain name
         and apply sanitizing filter to those links, then export to a text file.
