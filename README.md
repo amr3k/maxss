@@ -42,11 +42,9 @@ This script injects your blind XSS payload into a set of URLs.
 
 ## TODO
 
-☐ WAF detector
-
-☐ Enhancing performance
-
 ☐ Better redirection handling
+
+🗹 WAF detector
 
 🗹 Proxy
 
