@@ -72,11 +72,15 @@ def failure(message: str):
 
 
 def increase_sent_request_by_1():
+    """
+    I saved extra two lines using this function -_-
+    :return:
+    """
     global SENT_REQUESTS
     SENT_REQUESTS += 1
 
 
-def failed_request(url, exception):
+def failed_request(url: str, exception: str = None):
     global FAILED_ATTEMPTS
 
     increase_sent_request_by_1()
@@ -134,7 +138,7 @@ def check_target_domain(target_domain):
         failure("Invalid domain")
 
 
-def validate_urls(url_list) -> list:
+def validate_urls(url_list: list) -> list:
     update_status("Validating URL list")
     final_list = []
     try:
@@ -148,7 +152,7 @@ def validate_urls(url_list) -> list:
     return sanitize_urls(final_list)
 
 
-def sanitize_urls(url_list) -> list:
+def sanitize_urls(url_list: list) -> list:
     update_status("Removing unnecessary links")
     final_urls = url_list.copy()
     for url in url_list:
