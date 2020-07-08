@@ -42,11 +42,11 @@ class Injector:
                 tasks.append(ensure_future(self.__bound_request(sem=sem, url=url, session=session)))
             await gather(*tasks)
 
-    async def __bound_request(self, sem, url, session):
+    async def __bound_request(self, sem: BoundedSemaphore, url: str, session: ClientSession):
         async with sem:
             await self.__new_request(url=url, session=session)
 
-    async def __new_request(self, url, session):
+    async def __new_request(self, url: str, session: ClientSession):
         try:
             async with session.get(url, proxy=self.__proxy, headers=self.__headers):
                 pass
