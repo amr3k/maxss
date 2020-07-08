@@ -11,7 +11,7 @@ from os import mkdir
 from os.path import sep
 from re import match, sub
 from sys import exit, path
-from time import time
+from time import time, sleep
 
 from halo import Halo
 
@@ -29,8 +29,12 @@ live_status = Halo(spinner='dots12', color='white')
 live_status.start()
 
 
+def color(color: str):
+    live_status.text_color = color
+
+
 def update_status(message: str):
-    live_status.text_color = 'white'
+    color('white')
     live_status.text = message
     log_info(message)
 
@@ -57,14 +61,14 @@ def final_stats():
 
 
 def success(message: str):
-    live_status.text_color = 'blue'
+    color('blue')
     live_status.succeed(text=message)
     final_stats()
     log_info(message)
 
 
 def failure(message: str):
-    live_status.text_color = 'red'
+    color('red')
     live_status.fail(text=message)
     log_error(message)
     final_stats()
@@ -84,7 +88,7 @@ def failed_request(url: str, exception: str = None):
     global FAILED_ATTEMPTS
 
     increase_sent_request_by_1()
-    live_status.text_color = 'red'
+    color('red')
     live_status.text = f"({SENT_REQUESTS}/{URL_COUNT}) Could not reach {url}"
     FAILED_ATTEMPTS += 1
     log_warning(f"Could not reach {url} {exception}")
@@ -94,7 +98,7 @@ def successful_request(url: str):
     global SUCCESSFUL_ATTEMPTS
 
     increase_sent_request_by_1()
-    live_status.text_color = 'green'
+    color('green')
     live_status.text = f"({SENT_REQUESTS}/{URL_COUNT}) Sending to {url}"
     SUCCESSFUL_ATTEMPTS += 1
     log_info(f"Sending to {url}")
@@ -161,3 +165,25 @@ def sanitize_urls(url_list: list) -> list:
             if url.find(f'.{extension}?') > 0 or url.endswith(f'.{extension}'):
                 final_urls.remove(url)
     return list(filter(None, final_urls))  # To remove empty lines
+
+
+def check_waf_status(domain: str):
+    from waf_detector import waf_detector
+    result = waf_detector(f"http://{domain}")
+    try:
+        warning(f"Found WAF {result.get('name')}! {result.get('score')}% Confidence")
+        color('red')
+        warning('#' * 80)
+        sleep(0.5)
+        warning("Your device may get blocked by WAF!")
+        sleep(0.5)
+        warning("Click Ctrl+C to stop now")
+        warning('#' * 80)
+        sleep(1)
+        for i in reversed(range(1, 6)):
+            warning(f"Resuming in {i}")
+            sleep(1)
+        exit()
+    except AttributeError:
+        color('green')
+        warning("No known WAF detected, You are clear to go")

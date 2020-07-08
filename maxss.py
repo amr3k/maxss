@@ -41,6 +41,7 @@ def start(domain, archive=False, file=None):
         else:
             helpers.create_log_file(domain)
             helpers.check_target_domain(domain)
+            helpers.check_waf_status(domain)
             wa = web_archive.WebArchive(target_domain=domain, force_fetch=archive)
             url_list = wa.FINAL_URLS
         distribute(url_list=url_list)
