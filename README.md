@@ -44,6 +44,10 @@ This script injects your blind XSS payload into a set of URLs.
 
 ☐ WAF detector
 
+☐ Enhancing performance
+
+☐ Better redirection handling
+
 🗹 Proxy
 
 🗹 Command line arguments
@@ -54,7 +58,7 @@ This script injects your blind XSS payload into a set of URLs.
 
 ## Inspiration
 
-- [Mohamed Noir](https://www.facebook.com/groups/pentesting4arabs/?post_id=989611208161843)
+- [Mohamed Noir's post](https://www.facebook.com/groups/pentesting4arabs/?post_id=989611208161843)
 
 ## Special thanks
 
