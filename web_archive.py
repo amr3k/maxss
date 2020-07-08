@@ -1,66 +1,61 @@
-import os
-import sys
-import requests
+from json import loads, JSONDecodeError
+from os.path import sep, isfile
+from sys import path
+
+from requests import get as get_request
+from requests.exceptions import RequestException
+
 import helpers
 
 
 class WebArchive:
-    file_path = ''
-    BASE_URL = "https://web.archive.org/cdx/search/cdx?url=*.{domain}&output=text&fl=original&collapse=urlkey"
-    RAW_URLS = ""
     FINAL_URLS = []
 
     def __init__(self, target_domain: str, force_fetch=False):
         """
         Search Archive.org for all links that includes provided domain name
         and apply sanitizing filter to those links, then export to a text file.
-        :param target_domain: [Optional]
+        :param target_domain: String
+        :param force_fetch: Bool
         """
         self.TARGET_DOMAIN = target_domain
-        ds = os.path.sep
-        self.file_path = f"{sys.path[0]}{ds}output{ds}{self.TARGET_DOMAIN}.txt"
-        if self.cached_file() and not force_fetch:
-            helpers.update_status(f"Found cached file at ({self.file_path}), skipping archive.org")
+        self.__file_path = f"{path[0]}{sep}output{sep}{self.TARGET_DOMAIN}.txt"
+        if self.__cached_file() and not force_fetch:
+            helpers.update_status(f"Found cached file at ({self.__file_path}), skipping archive.org")
             return
+        helpers.create_output_dir()
         helpers.update_status('Starting requester')
-        self.fetch_url_list()
-        self.FINAL_URLS = helpers.validate_urls(self.RAW_URLS)
-        self.create_output_dir()
-        self.export_data()
+        self.FINAL_URLS = self.__fetch_url_list()
+        self.__export_data()
 
-    def fetch_url_list(self):
+    def __fetch_url_list(self) -> list:
         """
-        Fetch archived links from archive.org
-        :return:
+        Fetch cached links from archive.org
+        :return: list
         """
         try:
             helpers.update_status('Getting list of URLs')
-            response = requests.get(self.BASE_URL.format(domain=self.TARGET_DOMAIN))
-            assert response.status_code == 200
+            response = get_request(
+                url=f'https://web.archive.org/cdx/search/cdx?url={self.TARGET_DOMAIN}&matchType=prefix&output=json&fl'
+                    f'=original&filter=!statuscode:404&collapse=urlkey')
             helpers.update_status('Connected to Archive.org')
-            assert len(response.text) > len(self.TARGET_DOMAIN)
-            self.RAW_URLS = response.text
-            self.RAW_URLS = list(set(map(str.strip, self.RAW_URLS.split('\n'))))
-            self.FINAL_URLS = self.RAW_URLS.copy()
-        except requests.exceptions.RequestException:
+            dump = [u[0] for u in loads(response.text)]
+            dump.pop(0)
+            assert len(dump) > 0
+            helpers.update_status("Fetched data from archive.org")
+            return helpers.validate_urls(dump)
+        except RequestException:
             helpers.failure("Couldn't connect to archive.org")
-        except AssertionError:
+        except (AssertionError, JSONDecodeError, IndexError):
             helpers.failure(f"Nothing found about {self.TARGET_DOMAIN}")
 
-    @staticmethod
-    def create_output_dir():
+    def __export_data(self):
         try:
-            os.mkdir('output')
-        except FileExistsError:
-            pass
-
-    def export_data(self):
-        try:
-            with open(self.file_path, 'w') as output_file:
+            with open(self.__file_path, 'w') as output_file:
                 output_file.write('\n'.join(self.FINAL_URLS))
         except (FileNotFoundError, PermissionError, IOError) as e:
             helpers.failure(
-                f"Could not write results to the target directory output{os.path.sep}{self.TARGET_DOMAIN}\n{e}")
+                f"Could not write results to the target directory output{sep}{self.TARGET_DOMAIN}\n{e}")
 
-    def cached_file(self):
-        return os.path.isfile(self.file_path)
+    def __cached_file(self):
+        return isfile(self.__file_path)
