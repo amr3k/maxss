@@ -38,7 +38,7 @@ class WebArchive:
             update_status('Getting list of URLs')
             response = get_request(
                 url=f'https://web.archive.org/cdx/search/cdx?url={self.TARGET_DOMAIN}&matchType=prefix&output=json&fl'
-                    f'=original&filter=!statuscode:404&collapse=urlkey')
+                    f'=original&filter=!statuscode:404&collapse=urlkey', timeout=30)
             update_status('Connected to Archive.org')
             dump = [u[0] for u in loads(response.text)]
             dump.pop(0)
