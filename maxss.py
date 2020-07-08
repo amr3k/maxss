@@ -1,5 +1,6 @@
-import sys
+from multiprocessing import Process, cpu_count
 from os.path import sep
+from sys import exit, version_info
 
 try:
     import helpers
@@ -8,19 +9,29 @@ try:
     import injector
     import click
 except ModuleNotFoundError:
-    sys.exit("Please install missing packages with pip install -r requirements.txt")
+    exit("Please install missing packages with pip install -r requirements.txt")
 
 
 def distribute(url_list: list):
-    final_list = helpers.validate_urls(url_list)
-    helpers.URL_COUNT = len(final_list)
-    helpers.update_status(f"Validating URLS is done, now I have {helpers.URL_COUNT} to work with")
-    mcc = config_loader.USER_CONFIGS.get('maximum-concurrent-connections')
-    helpers.update_status("Getting headers")
+    injector.Injector(url_list=final_list, headers=config_loader.headers()[0])
     for h in config_loader.headers():
         helpers.update_status(f"Trying payload: ({h.get('Referral')})")
-        for i in range(0, helpers.URL_COUNT, mcc):
-            injector.Injector(url_list=final_list[i:i + mcc], headers=h)
+        injector.Injector(url_list=final_list, headers=h)
+        cores = cpu_count()
+        if cores == 1:
+            p = Process(target=injector.Injector, args=(final_list, h,))
+            p.start()
+            p.join()
+        else:
+            process_list = []
+            for i in range(cores):
+                chunk_list = final_list[i * helpers.URL_COUNT // cores:(i + 1) * helpers.URL_COUNT // cores]
+                process_list.append(
+                    Process(target=injector.Injector, args=(chunk_list, h,)))
+            for p in process_list:
+                p.start()
+            for p in process_list:
+                p.join()
 
 
 @click.command()
@@ -32,24 +43,28 @@ def distribute(url_list: list):
               help="If you have a file containing list of URLs, you can provide it here and skip searching Archive.org")
 def start(domain, archive=False, file=None):
     try:
-        assert sys.version_info >= (3, 7)
+        assert version_info >= (3, 7)
         if file:
             try:
                 helpers.create_log_file(file[file.rfind(sep) + 1:])
                 with open(file) as raw_file:
-                    url_list = list(set(map(str.strip, raw_file.readlines())))
+                    raw_list = list(set(map(str.strip, raw_file.readlines())))
+                url_list = helpers.validate_urls(raw_list)
             except (IsADirectoryError, FileNotFoundError, PermissionError, BufferError):
                 helpers.failure(f"Could not open {file}")
         else:
             helpers.create_log_file(domain)
             helpers.check_target_domain(domain)
             get_urls = web_archive.WebArchive(target_domain=domain, force_fetch=archive)
-            with open(get_urls.file_path) as file:
-                url_list = list(set(map(str.strip, file.readlines())))
+            url_list = get_urls.FINAL_URLS
+
+        helpers.URL_COUNT = len(url_list)
+        helpers.update_status(f"Now I have {helpers.URL_COUNT} to work with")
+
         distribute(url_list=url_list)
         helpers.success("All Done!")
     except AssertionError:
-        sys.exit("Sorry, you need at least Python 3.7 to run this script")
+        exit("Sorry, you need at least Python 3.7 to run this script")
     except KeyboardInterrupt:
         helpers.failure("Interrupted by user")
 
