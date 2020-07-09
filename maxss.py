@@ -15,6 +15,7 @@ def distribute(url_list: list):
     helpers.URL_COUNT = len(url_list)
     helpers.update_status(f"Now I have {helpers.URL_COUNT} to work with")
     headers = config_loader.headers()
+    helpers.HEADER_COUNT = len(headers)
     for h in headers:
         helpers.SENT_REQUESTS = 0
         helpers.update_status(f"Trying payload: ({h.get('Referral')})")

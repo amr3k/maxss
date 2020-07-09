@@ -48,7 +48,7 @@ class Injector:
 
     async def __new_request(self, url: str, session: ClientSession):
         try:
-            async with session.get(url, proxy=self.__proxy, headers=self.__headers):
+            async with session.get(url, proxy=self.__proxy, headers=self.__headers, allow_redirects=False):
                 pass
         except Exception as e:
             failed_request(url=url, exception=e.__str__())
@@ -59,4 +59,4 @@ class Injector:
 
     @staticmethod
     async def __on_request_finish(session, trace_config_ctx, params):
-        successful_request(url=params.url.human_repr())
+        successful_request(url=params.url.relative())
