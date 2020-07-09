@@ -1,11 +1,10 @@
 from json import loads, JSONDecodeError
 from os.path import sep, isfile
-from sys import path
 
 from requests import get as get_request
 from requests.exceptions import RequestException
 
-from helpers import (update_status, validate_urls, failure)
+from misc.helpers import (update_status, validate_urls, failure, SCRAPPED_DATA_DIR)
 
 
 class WebArchive:
@@ -19,7 +18,7 @@ class WebArchive:
         :param force_fetch: Bool
         """
         self.TARGET_DOMAIN = target_domain
-        self.__file_path = f"{path[0]}{sep}output{sep}{self.TARGET_DOMAIN}.txt"
+        self.__file_path = f"{SCRAPPED_DATA_DIR}{sep}{self.TARGET_DOMAIN}.txt"
         if self.__cached_file() and not force_fetch:
             update_status(f"Found cached file at ({self.__file_path}), skipping archive.org")
             with open(self.__file_path) as cached_file:
@@ -56,7 +55,7 @@ class WebArchive:
                 output_file.write('\n'.join(self.FINAL_URLS))
         except (FileNotFoundError, PermissionError, IOError) as e:
             failure(
-                f"Could not write results to the target directory output{sep}{self.TARGET_DOMAIN}\n{e}")
+                f"Could not write results to the target directory {SCRAPPED_DATA_DIR}{sep}{self.TARGET_DOMAIN}\n{e}")
 
     def __cached_file(self):
         return isfile(self.__file_path)

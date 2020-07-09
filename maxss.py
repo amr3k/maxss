@@ -2,9 +2,8 @@ from os.path import sep
 from sys import exit, version_info
 
 try:
-    import helpers
-    import config_loader
-    import web_archive
+    from misc import config_loader, helpers
+    from scrappers.web_archive import WebArchive
     import injector
     import click
 except ModuleNotFoundError:
@@ -44,7 +43,7 @@ def start(domain, archive=False, file=None):
             helpers.create_log_file(domain)
             helpers.check_target_domain(domain)
             helpers.check_waf_status(domain)
-            wa = web_archive.WebArchive(target_domain=domain, force_fetch=archive)
+            wa = WebArchive(target_domain=domain, force_fetch=archive)
             url_list = wa.FINAL_URLS
         distribute(url_list=url_list)
         helpers.success("All Done!")
