@@ -1,9 +1,11 @@
 from json import (load as json_load, JSONDecodeError)
+from os.path import sep
 from re import (search as re_search, IGNORECASE)
 from sys import path
-from os.path import sep
-from helpers import (update_status, failure, warning)
+
 from requests import (get as get_request, exceptions)
+
+from helpers import (update_status, failure)
 
 
 def waf_detector(url: str) -> list:
