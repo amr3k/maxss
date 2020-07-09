@@ -5,7 +5,7 @@ from sys import path
 from requests import get as get_request
 from requests.exceptions import RequestException
 
-from helpers import update_status, failure, validate_urls
+from helpers import (update_status, validate_urls, failure)
 
 
 class WebArchive:

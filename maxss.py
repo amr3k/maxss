@@ -14,7 +14,8 @@ except ModuleNotFoundError:
 def distribute(url_list: list):
     helpers.URL_COUNT = len(url_list)
     helpers.update_status(f"Now I have {helpers.URL_COUNT} to work with")
-    for h in config_loader.headers():
+    headers = config_loader.headers()
+    for h in headers:
         helpers.SENT_REQUESTS = 0
         helpers.update_status(f"Trying payload: ({h.get('Referral')})")
         injector.Injector(url_list=url_list, headers=h)
