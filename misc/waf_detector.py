@@ -5,7 +5,7 @@ from sys import path
 
 from requests import (get as get_request, exceptions)
 
-from helpers import (update_status, failure)
+from misc.helpers import (update_status, failure)
 
 
 def waf_detector(url: str) -> list:
