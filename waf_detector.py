@@ -2,12 +2,13 @@ from json import (load as json_load, JSONDecodeError)
 from re import (search as re_search, IGNORECASE)
 from sys import path
 from os.path import sep
-from helpers import failure, warning, update_status
+from helpers import (update_status, failure, warning)
 from requests import (get as get_request, exceptions)
 
 
-def waf_detector(url: str) -> dict:
+def waf_detector(url: str) -> list:
     update_status('Detecting WAF')
+    result = [False, "I haven't noticed any known WAF, You are clear to go"]
     params = {'xss': '<script>alert("XSS")</script>'}  # a payload which is noisy enough to provoke the WAF
     try:
         with open(f'{path[0]}/static/waf_signatures.json') as json_file:
@@ -29,9 +30,10 @@ def waf_detector(url: str) -> dict:
                 if score > best_match['score']:
                     best_match['score'] = score
                     best_match['name'] = name
-            if best_match['name']:
-                return best_match
-    except exceptions.RequestException:
-        warning("Cannot complete the WAF detection test, you're on your own")
+            if best_match['score'] > 0:
+                result = [True, f"Found WAF {best_match.get('name')}! I'm {best_match.get('score')}% confident"]
     except (FileNotFoundError, JSONDecodeError):
         failure(f"Error parsing {path[0]}{sep}static{sep}waf_signatures.json ! please review README.md")
+    except exceptions.RequestException:
+        result = [True, f"Cannot detect WAF"]
+    return result

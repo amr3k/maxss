@@ -1,24 +1,24 @@
 import json
-import sys
+from sys import path
 from os.path import sep
 from random import choice
 
 import helpers
 
 try:
-    with open(f"{sys.path[0]}{sep}static{sep}config.json") as config_json:
+    with open(f"{path[0]}{sep}static{sep}config.json") as config_json:
         USER_CONFIGS = json.load(config_json)
         proxy = USER_CONFIGS.get('http-proxy')
         if proxy:
             assert helpers.validate_urls([proxy])
         assert type(USER_CONFIGS.get('request-timeout')) == float
 except (FileNotFoundError, json.JSONDecodeError, KeyError, AssertionError):
-    helpers.failure("Error parsing config.json file, please review README.md")
+    helpers.failure(f"Error parsing {path[0]}{sep}static{sep}config.json ! please review README.md")
 
 
 def user_agents() -> list:
     try:
-        with open(f'{sys.path[0]}{sep}static{sep}user-agents.json') as file:
+        with open(f'{path[0]}{sep}static{sep}user-agents.json') as file:
             return json.load(file)
     except (FileNotFoundError, json.JSONDecodeError, KeyError):
         helpers.failure("Couldn't load user-agents.json file")
@@ -26,7 +26,7 @@ def user_agents() -> list:
 
 def load_payloads() -> list:
     try:
-        with open(f"{sys.path[0]}{sep}static{sep}payloads.txt") as payloads_file:
+        with open(f"{path[0]}{sep}static{sep}payloads.txt") as payloads_file:
             raw_payload_list = list(filter(None, set(map(str.strip, payloads_file.readlines()))))
         payload_list = raw_payload_list.copy()
         for p in raw_payload_list:
