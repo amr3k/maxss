@@ -22,11 +22,11 @@ This script injects your blind XSS payload into a set of URLs.
     > - If you use credentials you can pass them in proxy URL e.g `http://user:pass@some.proxy.com`
     > - Timeout must be float number
 
-- Check `static/extensions.json` file if you want to add/remove extensions which if found in a URL, it will be removed to save time and bandwidth.
+- Check `static/extensions.json` file if you want to add/remove extensions which will be removed from URL list.
 
 ## Usage
 
-- `python3 maxss.py -d <domain>`.
+- `python3 maxss.py -d <domain>`
 
 > Fetch a URL list related to the target domain from _archive.org_ 
 >
@@ -34,7 +34,7 @@ This script injects your blind XSS payload into a set of URLs.
 >
 > To force fetch the newest list, add `-a`
 - `python3 maxss.py [-f <file path>]` 
-> Skip _archive.org_ and directly inject URLs found in provided file. 
+> Skip scrapping and work on URLs in the provided file. 
 
 ## Known bugs
 
@@ -44,21 +44,20 @@ This script injects your blind XSS payload into a set of URLs.
 
 ☐ Better redirection handling
 
+☐ Adding more scrappers
+
 🗹 WAF detector
 
 🗹 Proxy
-
-🗹 Command line arguments
-
-🗹 Option to use a file directly instead of archive.org
 
 🗹 Advanced Logging
 
 ## Inspiration
 
 - [Mohamed Noir's post](https://www.facebook.com/groups/pentesting4arabs/?post_id=989611208161843)
+- [XSStrike](https://github.com/s0md3v/XSStrike/blob/master/core/wafDetector.py)
 
 ## Special thanks
 
 - [Zigoo0](https://github.com/zigoo0)
-- s0md3v for his [WAF detection logic](https://github.com/s0md3v/XSStrike/blob/master/core/wafDetector.py)
+- Sohib Atef
