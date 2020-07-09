@@ -16,7 +16,7 @@ from time import time, sleep
 
 from halo import Halo
 
-live_status = Halo(spinner='dots12', color='white')
+live_status = Halo(spinner='dots12')
 live_status.start()
 
 CURRENT_DIR = path[0]
@@ -35,6 +35,7 @@ def color(color: str):
 
 
 def update_status(message: str):
+    color('white')
     live_status.text = message
     log_info(message)
 
@@ -46,8 +47,7 @@ def warning(message: str, error: str = None):
 
 
 def critical(message: str):
-    live_status.spinner = "toggle3"
-    live_status.text = f"⚠ {message}"
+    live_status.text = f"⛔ {message}"
     log_critical(f"{message}")
 
 
@@ -68,7 +68,7 @@ def final_stats():
 
 
 def success(message: str):
-    color('blue')
+    color('green')
     live_status.succeed(text=message)
     final_stats()
     log_info(message)
@@ -105,7 +105,7 @@ def successful_request(url: str):
     global SUCCESSFUL_ATTEMPTS
 
     increase_sent_request_by_1()
-    color('green')
+    color('blue')
     live_status.text = f"({SENT_REQUESTS}/{URL_COUNT}) Sending to {url}"
     SUCCESSFUL_ATTEMPTS += 1
     log_info(f"Sending to {url}")
@@ -178,12 +178,9 @@ def check_waf_status(domain: str):
     from waf_detector import waf_detector
     result = waf_detector(f"http://{domain}")
     if result[0]:
-        color('red')
         critical(result[1])
         for i in reversed(range(1, 6)):
             live_status.text = f"{result[1]} ... Resuming in {i}"
             sleep(1)
-        live_status.spinner = "dots12"
-        color('white')
     else:
         warning(result[1])
