@@ -6,8 +6,8 @@ from aiohttp import (
     ClientTimeout, TraceConfig, TCPConnector, ClientSession
 )
 
-from config_loader import USER_CONFIGS
-from helpers import (
+from misc.config_loader import USER_CONFIGS
+from misc.helpers import (
     failure, successful_request, failed_request
 )
 
