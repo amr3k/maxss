@@ -19,8 +19,9 @@ from halo import Halo
 live_status = Halo(spinner='dots12')
 live_status.start()
 
-CURRENT_DIR = path[0]
 CURRENT_TIME = datetime.fromtimestamp(time()).strftime("%Y%m%d%H%M")
+CURRENT_DIR = path[0]
+SCRAPPED_DATA_DIR = f'{CURRENT_DIR}{sep}dump{sep}scrapped_data'
 LOG_FILE_PATH = ""
 URL_COUNT = 0
 SENT_REQUESTS = 0
@@ -115,7 +116,7 @@ def create_log_file(domain):
     global LOG_FILE_PATH
     try:
         create_output_dirs()
-        LOG_FILE_PATH = f"{CURRENT_DIR}{sep}logs{sep}{domain}_{CURRENT_TIME}.log"
+        LOG_FILE_PATH = f"{CURRENT_DIR}{sep}dump{sep}logs{sep}{domain}_{CURRENT_TIME}.log"
         log_basicConfig(format="%(asctime)s (%(process)d) [%(filename)s:%(lineno)3d] [%(levelname)s]: %(message)s",
                         level=LOG_INFO,
                         filename=LOG_FILE_PATH,
@@ -126,8 +127,10 @@ def create_log_file(domain):
 
 def create_output_dirs():
     try:
-        mkdir(f'{CURRENT_DIR}{sep}output')
-        mkdir(f"{CURRENT_DIR}{sep}logs")
+        global SCRAPPED_DATA_DIR
+        mkdir(f"{CURRENT_DIR}{sep}dump")
+        mkdir(SCRAPPED_DATA_DIR)
+        mkdir(f"{CURRENT_DIR}{sep}dump{sep}logs")
     except FileExistsError:
         pass
 
@@ -175,7 +178,7 @@ def sanitize_urls(url_list: list) -> list:
 
 
 def check_waf_status(domain: str):
-    from waf_detector import waf_detector
+    from misc.waf_detector import waf_detector
     result = waf_detector(f"http://{domain}")
     if result[0]:
         critical(result[1])

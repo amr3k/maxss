@@ -3,7 +3,7 @@ from os.path import sep
 from random import choice
 from sys import path
 
-from helpers import (validate_urls, failure)
+from misc.helpers import (validate_urls, failure)
 
 try:
     with open(f"{path[0]}{sep}static{sep}config.json") as config_json:

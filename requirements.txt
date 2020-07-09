@@ -10,7 +10,6 @@ halo==0.0.29
 idna==2.10
 log-symbols==0.0.14
 multidict==4.7.6
-numpy==1.19.0
 requests==2.24.0
 six==1.15.0
 spinners==0.0.24
