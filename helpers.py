@@ -3,6 +3,7 @@ from json import load as json_load, JSONDecodeError
 from logging import (
     info as log_info,
     warning as log_warning,
+    critical as log_critical,
     error as log_error,
     basicConfig as log_basicConfig,
     INFO as LOG_INFO
@@ -15,6 +16,9 @@ from time import time, sleep
 
 from halo import Halo
 
+live_status = Halo(spinner='dots12', color='white')
+live_status.start()
+
 CURRENT_DIR = path[0]
 CURRENT_TIME = datetime.fromtimestamp(time()).strftime("%Y%m%d%H%M")
 LOG_FILE_PATH = ""
@@ -25,39 +29,42 @@ HEADER_COUNT = 0
 SUCCESSFUL_ATTEMPTS = 0
 FAILED_ATTEMPTS = 0
 
-live_status = Halo(spinner='dots12', color='white')
-live_status.start()
-
 
 def color(color: str):
     live_status.text_color = color
 
 
 def update_status(message: str):
-    color('white')
     live_status.text = message
     log_info(message)
 
 
-def warning(message: str):
-    live_status.warn(message)
-    log_warning(message)
+def warning(message: str, error: str = None):
+    color('yellow')
+    live_status.text = f"⚠ {message}"
+    log_warning(f"{message} ... {error}")
+
+
+def critical(message: str):
+    live_status.spinner = "toggle3"
+    live_status.text = f"⚠ {message}"
+    log_critical(f"{message}")
 
 
 def final_stats():
-    live_status.warn(f"Total URLS: {URL_COUNT}")
+    live_status.info(f"Total URLS: {URL_COUNT}")
     log_info(f"Total URLS: {URL_COUNT}")
-    live_status.warn(f"Successful attempts: {SUCCESSFUL_ATTEMPTS}")
+    live_status.info(f"Successful attempts: {SUCCESSFUL_ATTEMPTS}")
     log_info(f"Successful attempts: {SUCCESSFUL_ATTEMPTS}")
-    live_status.warn(f"Failed attempts: {FAILED_ATTEMPTS}")
+    live_status.info(f"Failed attempts: {FAILED_ATTEMPTS}")
     log_info(f"Failed attempts: {FAILED_ATTEMPTS}")
     try:
-        success_rate = f"{((SUCCESSFUL_ATTEMPTS / HEADER_COUNT) / URL_COUNT):.0%}"
+        success_rate = f"{(SUCCESSFUL_ATTEMPTS / (URL_COUNT * HEADER_COUNT)):.0%}"
     except ZeroDivisionError:
         success_rate = "0%"
-    live_status.warn(f"Success rate = {success_rate}")
+    live_status.info(f"Success rate = {success_rate}")
     log_info(f"Success rate = {success_rate}")
-    live_status.warn(f"Full log file: {LOG_FILE_PATH}")
+    live_status.info(f"Full log file: {LOG_FILE_PATH}")
 
 
 def success(message: str):
@@ -69,15 +76,15 @@ def success(message: str):
 
 def failure(message: str):
     color('red')
+    final_stats()
     live_status.fail(text=message)
     log_error(message)
-    final_stats()
     exit(1)
 
 
 def increase_sent_request_by_1():
     """
-    I saved extra two lines using this function -_-
+    I saved extra two lines using this function
     :return:
     """
     global SENT_REQUESTS
@@ -136,7 +143,7 @@ def extension_list() -> list:
 def check_target_domain(target_domain):
     update_status("Validating domain")
     try:
-        if not match('^[a-z]+([a-z]+.)+[a-z]+$', target_domain):
+        if not match('^([a-z0-9\-_]+\.)+[a-z]{2,6}$', target_domain):
             failure("Invalid domain! Please type a valid domain name like google.com or mail.google.com")
     except TypeError:
         failure("Invalid domain")
@@ -170,20 +177,13 @@ def sanitize_urls(url_list: list) -> list:
 def check_waf_status(domain: str):
     from waf_detector import waf_detector
     result = waf_detector(f"http://{domain}")
-    try:
-        warning(f"Found WAF {result.get('name')}! {result.get('score')}% Confidence")
+    if result[0]:
         color('red')
-        warning('#' * 80)
-        sleep(0.5)
-        warning("Your device may get blocked by WAF!")
-        sleep(0.5)
-        warning("Click Ctrl+C to stop now")
-        warning('#' * 80)
-        sleep(1)
+        critical(result[1])
         for i in reversed(range(1, 6)):
-            warning(f"Resuming in {i}")
+            live_status.text = f"{result[1]} ... Resuming in {i}"
             sleep(1)
-        exit()
-    except AttributeError:
-        color('green')
-        warning("No known WAF detected, You are clear to go")
+        live_status.spinner = "dots12"
+        color('white')
+    else:
+        warning(result[1])
